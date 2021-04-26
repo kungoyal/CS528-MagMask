@@ -1,0 +1,2 @@
+rootProject.name='MagMask'
+include ':app'

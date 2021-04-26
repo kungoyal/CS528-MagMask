@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">MagMask</string>
+    <string name="accel_title">The 3D acceleration values are:</string>
+    <string name="gyro_title">The gyroscope values are:</string>
+    <string name="magneto_title">The magnetometer values are:</string>
+    <string name="activity">Enter activity number:</string>
+    <string name="initials">Enter initials</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+<!--    <string name="coordinates">%1$2.5f,%2$2.5f,%3$2.5f</string>-->
+<!--    <string name="shake">%1$s</string>-->
+</resources>
