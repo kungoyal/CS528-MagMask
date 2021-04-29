@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 
 ZERO_CROSSING_THRESHOLD = 1
+WINDOW_SIZE = 20
+STRIDE = 10
 
 def get_feature_vector(window):
     fv_funcs = [
@@ -21,7 +23,7 @@ def get_feature_vector(window):
     final_fv = []
     for i in (x, y, z, mag):
         final_fv += [f(i) for f in fv_funcs]
-
+    return final_fv
 
 
 def get_mean(window):
@@ -51,7 +53,23 @@ def get_num_zero_corssings(window):
     zc = (window[-1:] < t) and (window[1:] > t)
     return len(zc)
 
+def get_fv_csv(csv_string):
+
+    lines = csv_string.split("\n")
+
+    data = np.array([l.split(',') for l in lines])
+    fv_arr = []
+    return_csv_str = ""
+    for win_idx in range(0, len(data) - WINDOW_SIZE, STRIDE):
+        fv = get_feature_vector(data[win_idx:win_idx + WINDOW_SIZE])
+        return_csv_str += ','.join(['%.5f' % num for num in fv])
+        return_csv_str += "\n"
+
+    return return_csv_str
+
+# for manual  testing
 if __name__ == "__main__":
-    csvstring = None
-    window = None
-    get_feature_vector(window)
+    csv_string = None
+    get_fv_csv(csv_string)
+
+
