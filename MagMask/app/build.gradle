@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.chaquo.python'
 
 android {
     compileSdkVersion 28
@@ -12,6 +13,23 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+        python {
+            pip {
+                // A pip requirement specifier, with or without a version number:
+                install "scipy"
+                install "requests==2.24.0"
+
+                // An sdist or wheel filename, relative to the project directory:
+                install "MyPackage-1.2.3-py2.py3-none-any.whl"
+
+                // "-r"` followed by a requirements filename, relative to the
+                // project directory:
+                install "-r", "requirements.txt"
+            }
+        }
     }
 
     buildTypes {
