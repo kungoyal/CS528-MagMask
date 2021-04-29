@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int activity_num;
     private int attempt_num = 0;
     private String initials;
+    private String env_code;
     private ArrayList<String> accel_data = new ArrayList<>();
     private ArrayList<String> gyro_data = new ArrayList<>();
     private ArrayList<String> magneto_data = new ArrayList<>();
@@ -54,7 +55,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     activity_num = 0;
                 }
                 EditText edit = (EditText) findViewById(R.id.editText2);
+                EditText edit2 = (EditText) findViewById(R.id.editText3);
                 initials = edit.getText().toString();
+                env_code = edit2.getText().toString();
                 onResume();
             }
         });
@@ -84,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tv2.setText("");
         FileWriter writer = null;
         try {
-            String filename = initials + "_" + activity_num + "_" + attempt_num + ".csv";
+            String filename = initials + "_" + env_code + "_" + activity_num + "_" + attempt_num + ".csv";
             File filepath = new File(getExternalFilesDir(null)+filename);
             filepath.createNewFile();
             writer = new FileWriter(filepath);

@@ -83,14 +83,14 @@
 
     <EditText
         android:id="@+id/editText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="192dp"
+        android:layout_height="33dp"
         android:layout_marginTop="64dp"
-        android:layout_marginEnd="188dp"
+        android:layout_marginEnd="200dp"
         android:autofillHints=""
         android:ems="10"
         android:hint=""
-        android:inputType="phone|number"
+        android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4"
         tools:ignore="LabelFor" />
@@ -105,16 +105,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText" />
 
+
     <EditText
         android:id="@+id/editText2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="182dp"
+        android:layout_height="35dp"
         android:layout_marginTop="172dp"
-        android:layout_marginEnd="188dp"
+        android:layout_marginEnd="212dp"
         android:autofillHints=""
         android:ems="10"
         android:hint=""
         android:inputType="textCapCharacters"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4"
+        tools:ignore="LabelFor" />
+
+    <EditText
+        android:id="@+id/editText3"
+        android:layout_width="206dp"
+        android:layout_height="38dp"
+        android:layout_marginTop="108dp"
+        android:layout_marginEnd="16dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:hint="@string/env_code"
+        android:inputType="number"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4"
         tools:ignore="LabelFor" />

@@ -5,6 +5,7 @@
     <string name="magneto_title">The magnetometer values are:</string>
     <string name="activity">Enter activity number:</string>
     <string name="initials">Enter initials</string>
+    <string name="env_code">Enter environment code</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
 <!--    <string name="coordinates">%1$2.5f,%2$2.5f,%3$2.5f</string>-->
