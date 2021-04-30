@@ -14,6 +14,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.chaquo.python.PyObject;
+import com.chaquo.python.Python;
+import com.chaquo.python.android.AndroidPlatform;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int attempt_num = 0;
     private String initials;
     private String env_code;
+    private String py_input;
     private ArrayList<String> accel_data = new ArrayList<>();
     private ArrayList<String> gyro_data = new ArrayList<>();
     private ArrayList<String> magneto_data = new ArrayList<>();
@@ -44,6 +49,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         magneto = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        if(!Python.isStarted()){
+            Python.start(new AndroidPlatform(this));
+        }
+        Python py = Python.getInstance();
+        PyObject pyobj = py.getModule("choco");
 
         start_button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
@@ -100,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            e.printStackTrace();
 //        }
         for(String line: accel_data){
+            py_input += line + "\n";
             try {
                 writer.write(line + System.lineSeparator());
             } catch (IOException e) {
@@ -111,7 +123,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
+        py_input += "\n";
         for(String line: gyro_data){
+            py_input += line + "\n";
             try {
                 writer.write(line + System.lineSeparator());
             } catch (IOException e) {
@@ -123,7 +137,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
+        py_input += "\n";
         for(String line: magneto_data){
+            py_input += line + "\n";
             try {
                 writer.write(line + System.lineSeparator());
             } catch (IOException e) {
@@ -141,6 +157,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(!Python.isStarted()){
+            Python.start(new AndroidPlatform(this));
+        }
+        Python py = Python.getInstance();
+        final PyObject pyobj = py.getModule("choco");
+        final PyObject obj = pyobj.callAttr("main", py_input);
+        TextView ptv = (TextView) findViewById(R.id.textView6);
+        ptv.setText(obj.toJava(String.class));
     }
 
     @Override
@@ -186,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
-
 
 
 
