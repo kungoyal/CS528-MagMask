@@ -10,11 +10,12 @@ from sklearn.preprocessing import Normalizer
 import pandas as pd
 import pickle
 
+# Classifier with best selection metric will be saved into "best_classifier.pkl"
 SELECTION_METRIC = "F1"
 
 
 def load_data():
-    pass
+    # TODO: open data files, perform feature extraction and store feature vectors and labels in X, y
 
     X = None  # Feature vector array
     y = None  # Multi-class labels
@@ -37,14 +38,7 @@ def get_scores(y_true, y_pred):
 X, y = load_data()
 X_tr, X_test, y_tr, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-classifier_list = [
-    ("RandomForestClassifier", RandomForestClassifier(n_estimators=100, max_depth=4)),
-    ("LinearSVC", LinearSVC()),
-    ("RBF SVC", SVC()),
-    ("GaussianNB", GaussianNB()),
-
-]
-
+# Add multiple classifiers here and the classifier with best hyperparameters will be selected automatically
 classifier_dict = {
     "RandomForestClassifier": RandomForestClassifier(n_estimators=100, max_depth=4),
     "LinearSVC": LinearSVC(),
@@ -52,8 +46,8 @@ classifier_dict = {
     "GaussianNB": GaussianNB(),
 }
 
-# not ideal because data has class imbalance
-kf = KFold()
+# TODO: up-sample minority class or use other methods to deal with class imbalance
+kf = KFold()  # not ideal because data has class imbalance
 fold = 0
 fold_scores = {}
 for train_idx, test_idx in kf.split(X_tr):
@@ -67,17 +61,14 @@ for train_idx, test_idx in kf.split(X_tr):
     X_valid = normalizer.transform(X_valid)
 
     print(f"Fold = {fold}")
-    # for name, model in classifier_list:
     for name in classifier_dict.keys():
         model = classifier_dict[name]
         model.fit(X_train, y_train)
         y_pred = model.predict(X_valid)
         scores = get_scores(y_valid, y_pred)
         fold_scores[fold][name] = scores
-        print(f"\tClassifier: {name}")
-        # for n, s in scores:
-        #     print(f"\t\t{n}\t:{s}")
 
+        print(f"\tClassifier: {name}")
         for metric in scores.keys():
             print(f"\t\t{metric}\t:{scores[metric]}")
 
@@ -92,6 +83,7 @@ for classifier in scores_df.keys():
     for fol in scores_df[classifier]:
         for metr in fol.keys():
             agg_metrics[metr] += (fol[metr]/fold)
+
     print(f"Classifier = {classifier}")
     for agg_m in agg_metrics.keys():
         print(f"\t{agg_m} = {agg_metrics[agg_m]}")
@@ -118,6 +110,10 @@ for metric in scores.keys():
 
 with open("best_classifier.pkl", "wb") as fil:
     pickle.dump(best_model, fil)
+
+# Required since data needs to be normalized before prediction
+with open("normalizer.pkl", "wb") as fil:
+    pickle.dump(normalizer, fil)
 
 print("DONE")
 
