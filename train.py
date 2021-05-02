@@ -38,13 +38,14 @@ def load_data(data):
     data_df = pd.DataFrame(table, columns=columns)
     data_cols = ['Accelerometer', 'Gyroscope', 'Magnetometer']
     label_cols = ['Action ID']
-    X = np.array(data_df[data_cols].values.tolist()).reshape(6, -1)  # Feature vector array
-    y = data_df[label_cols].values # Multi-class labels
+    X = np.array(data_df[data_cols].values.tolist()).reshape(len(table), -1)  # Feature vector array
+    y = data_df[label_cols].values.reshape(-1) # Multi-class labels
     # input()
     return X, y
 
 
 def get_scores(y_true, y_pred):
+    # try:
     sd = {
         "Accuracy": accuracy_score(y_true, y_pred),
         "Precision": precision_score(y_true, y_pred),
@@ -143,4 +144,5 @@ if __name__ == "__main__":
     data_dir = "./Data"
     load_data(data_dir)
     print("DONE")
+    main(data_dir)
 
