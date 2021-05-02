@@ -81,14 +81,15 @@ def get_fv_csv(csv_string):
         fv_arr = get_feature_vectors(data)
         concatenated_fv.append(fv_arr)
     c_fv = np.array(concatenated_fv).reshape(len(concatenated_fv), -1)
-    final_fv = c_fv.tolist()
-
-    return_csv_str = ""
-    for fv in final_fv:
-        return_csv_str += ','.join(['%.5f' % num for num in fv])
-        return_csv_str += "\n"
-    print(return_csv_str)
-    return return_csv_str
+    return c_fv
+    # final_fv = c_fv.tolist()
+    #
+    # return_csv_str = ""
+    # for fv in final_fv:
+    #     return_csv_str += ','.join(['%.5f' % num for num in fv])
+    #     return_csv_str += "\n"
+    # print(return_csv_str)
+    # return return_csv_str
 
 # for manual  testing
 if __name__ == "__main__":
