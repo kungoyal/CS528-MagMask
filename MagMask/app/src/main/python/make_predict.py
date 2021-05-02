@@ -1,6 +1,9 @@
 import extract_features
 def get_pred(model, input_csv):
     classifier, normalizer = model
+    print("START")
+    print(input_csv)
+    print("DONE")
     input_fv = extract_features.get_fv_csv(input_csv)
     pred_arr = []
     for fv in input_fv:

@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+        py_input = "";
         for(String line: accel_data){
             py_input += line + "\n";
             try {
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
-        py_input += "\n;\n";
+        py_input += ";\n";
         for(String line: gyro_data){
             py_input += line + "\n";
             try {
@@ -143,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
-        py_input += "\n;\n";
+        py_input += ";\n";
         for(String line: magneto_data){
             py_input += line + "\n";
             try {
@@ -152,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 e.printStackTrace();
             }
         }
+        py_input += ";";
 
         try {
             writer.flush();
