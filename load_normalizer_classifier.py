@@ -1,7 +1,10 @@
-import pickle
+import pickle, os
+from os.path import dirname, join
 
-classifier_path = './best_classifier.pkl'
-normalizer_path = './normalizer.pkl'
+classifier_path= join(dirname(__file__), "best_classifier.pkl")
+normalizer_path = join(dirname(__file__), "normalizer.pkl")
+# classifier_path = __file__+'/../best_classifier.pkl'
+# normalizer_path = __file__+'/../normalizer.pkl'
 
 def get_classifier_normalizer():
     with open (normalizer_path, 'rb') as fil:
