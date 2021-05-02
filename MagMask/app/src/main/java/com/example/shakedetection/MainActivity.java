@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private String initials;
     private String env_code;
     private String py_input;
+    private StringBuilder sb;
     private ArrayList<String> accel_data;
     private ArrayList<String> gyro_data;
     private ArrayList<String> magneto_data;
@@ -116,9 +117,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+
         py_input = "";
+        sb = new StringBuilder("");
         for(String line: accel_data){
-            py_input += line + "\n";
+            py_input += line + System.lineSeparator();
+            if (line !=  null) {
+                sb.append(line).append(System.lineSeparator());
+            } else {
+                continue;
+            }
             try {
                 writer.write(line + System.lineSeparator());
             } catch (IOException e) {
@@ -130,9 +138,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
-        py_input += ";\n";
+        py_input += ";"+ System.lineSeparator();
+        sb.append(";").append(System.lineSeparator());
         for(String line: gyro_data){
-            py_input += line + "\n";
+            py_input += line + System.lineSeparator();
+            if (line != null) {
+                sb.append(line).append(System.lineSeparator());
+            } else {
+                continue;
+            }
             try {
                 writer.write(line + System.lineSeparator());
             } catch (IOException e) {
@@ -144,9 +158,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
-        py_input += ";\n";
+        py_input += ";"+ System.lineSeparator();
+        sb.append(";").append(System.lineSeparator());
         for(String line: magneto_data){
-            py_input += line + "\n";
+            py_input += line + System.lineSeparator();
+            if (line != null) {
+                sb.append(line).append(System.lineSeparator());
+            } else {
+                continue;
+            }
             try {
                 writer.write(line + System.lineSeparator());
             } catch (IOException e) {
@@ -154,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
         py_input += ";";
+        sb.append(";");
 
         try {
             writer.flush();
@@ -170,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         Python py = Python.getInstance();
         final PyObject pyobj = py.getModule("make_predict");
-        final PyObject obj = pyobj.callAttr("get_pred", model, py_input);
+        final PyObject obj = pyobj.callAttr("get_pred", model, sb.toString());
         TextView ptv = (TextView) findViewById(R.id.textView6);
         String results = obj.toJava(String.class);
         ptv.setText(results);
