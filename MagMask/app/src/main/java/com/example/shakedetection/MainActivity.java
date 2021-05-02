@@ -35,9 +35,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private String initials;
     private String env_code;
     private String py_input;
-    private ArrayList<String> accel_data = new ArrayList<>();
-    private ArrayList<String> gyro_data = new ArrayList<>();
-    private ArrayList<String> magneto_data = new ArrayList<>();
+    private ArrayList<String> accel_data;
+    private ArrayList<String> gyro_data;
+    private ArrayList<String> magneto_data;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -54,12 +55,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Python.start(new AndroidPlatform(this));
         }
         Python py = Python.getInstance();
-        PyObject pyobj = py.getModule("choco");
+        final PyObject nc_file = py.getModule("load_normalizer_classifier"); //normalizer, classifier
+        final PyObject nc_model = nc_file.callAttr("get_classifier_normalizer");
+
 
         start_button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 run = true;
                 attempt_num += 1;
+                accel_data = new ArrayList<>();
+                gyro_data = new ArrayList<>();
+                magneto_data = new ArrayList<>();
                 try {
                     activity_num = Integer.parseInt(((EditText) findViewById(R.id.editText)).getText().toString());
                 }catch (Exception e) {
@@ -77,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View view) {
                 run = false;
-                onPause();
+                onPause(nc_model);
             }
         });
     }
@@ -89,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this, magneto, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    protected void onPause(){
+    protected void onPause(PyObject model){
         super.onPause();
         sensorManager.unregisterListener(this);
         TextView tv = findViewById(R.id.textView2);
@@ -123,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
-        py_input += "\n";
+        py_input += "\n;\n";
         for(String line: gyro_data){
             py_input += line + "\n";
             try {
@@ -137,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
-        py_input += "\n";
+        py_input += "\n;\n";
         for(String line: magneto_data){
             py_input += line + "\n";
             try {
@@ -161,10 +167,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Python.start(new AndroidPlatform(this));
         }
         Python py = Python.getInstance();
-        final PyObject pyobj = py.getModule("choco");
-        final PyObject obj = pyobj.callAttr("main", py_input);
+        final PyObject pyobj = py.getModule("make_predict");
+        final PyObject obj = pyobj.callAttr("get_pred", model, py_input);
         TextView ptv = (TextView) findViewById(R.id.textView6);
-        ptv.setText(obj.toJava(String.class));
+        String results = obj.toJava(String.class);
+        ptv.setText(results);
     }
 
     @Override
