@@ -14,7 +14,7 @@ import os
 
 import extract_features
 # Classifier with best selection metric will be saved into "best_classifier.pkl"
-SELECTION_METRIC = "F1"
+SELECTION_METRIC = "Accuracy"
 
 
 def load_data(data):
@@ -48,10 +48,10 @@ def get_scores(y_true, y_pred):
     # try:
     sd = {
         "Accuracy": accuracy_score(y_true, y_pred),
-        "Precision": precision_score(y_true, y_pred),
-        "Recall": recall_score(y_true, y_pred),
-        "F1": f1_score(y_true, y_pred, average='weighted'),
-        "ROC_AUC": roc_auc_score(y_true, y_pred)
+        # "Precision": precision_score(y_true, y_pred),
+        # "Recall": recall_score(y_true, y_pred),
+        # "F1": f1_score(y_true, y_pred, average='weighted'),
+        # "ROC_AUC": roc_auc_score(y_true, y_pred)
     }  # scores dict
 
     return sd
