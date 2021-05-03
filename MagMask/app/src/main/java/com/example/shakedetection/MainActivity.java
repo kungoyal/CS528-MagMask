@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ArrayList<String> accel_data;
     private ArrayList<String> gyro_data;
     private ArrayList<String> magneto_data;
+    private int SENSOR_DELAY = 50000;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,9 +93,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     protected void onResume(){
         super.onResume();
-        sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, gyro, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, magneto, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, accel, SENSOR_DELAY);
+        sensorManager.registerListener(this, gyro, SENSOR_DELAY);
+        sensorManager.registerListener(this, magneto, SENSOR_DELAY);
     }
 
     protected void onPause(PyObject model){

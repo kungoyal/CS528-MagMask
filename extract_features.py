@@ -13,18 +13,31 @@ def get_fv_csv2(csv_string):
     d = pd.read_csv(io.StringIO(csv_string), header=None)
     d.columns = ['x', 'y', 'z', 'time']
     split_idx = list(np.where(d.isnull().any(axis=1))[0])
-    sensor1_fv = get_feature_vectors(d.iloc[0:split_idx[0]].values.astype(float))
-    sensor2_fv = get_feature_vectors(d.iloc[split_idx[0]+1:split_idx[1]].values.astype(float))
-    sensor3_fv = get_feature_vectors(d.iloc[split_idx[1]+1: split_idx[2]].values.astype(float))
+    s1_data = d.iloc[0:split_idx[0]].values.astype(float)
+    s2_data = d.iloc[split_idx[0]+1:split_idx[1]].values.astype(float)
+    s3_data = d.iloc[split_idx[1]+1: split_idx[2]].values.astype(float)
+    s1, s2, s3 = fix_sr_3sensors(s1_data, s2_data, s3_data)
+    sensor1_fv = get_feature_vectors(s1)
+    sensor2_fv = get_feature_vectors(s2)
+    sensor3_fv = get_feature_vectors(s3)
     rows = []
     for win in range(len(sensor1_fv)):
         rows.append([sensor1_fv[win].tolist(), sensor2_fv[win].tolist(), sensor3_fv[win].tolist()])
     X = np.array(rows).reshape(-1, 84)  # Feature vector array
     # input()
     return X
+def fix_sr_3sensors(s1_raw, s2_raw, s3_raw):
+    low_max_t = min([s1_raw[0][3], s2_raw[0][3], s3_raw[0][3]])
+    hi_min_t = min([s1_raw[-1][3], s2_raw[-1][3], s3_raw[-1][3]])
+    ideal_ts_arr = np.arange(low_max_t, hi_min_t, 1000000000/SAMPLE_RATE)
+    s1_interp = np.array([np.interp(ideal_ts_arr, s1_raw[:, 3], s1_raw[:, i]) for i in [0, 1, 2, 3]]).T
+    s2_interp = np.array([np.interp(ideal_ts_arr, s2_raw[:, 3], s2_raw[:, i]) for i in [0, 1, 2, 3]]).T
+    s3_interp = np.array([np.interp(ideal_ts_arr, s3_raw[:, 3], s3_raw[:, i]) for i in [0, 1, 2, 3]]).T
+    return s1_interp, s2_interp, s3_interp
 
 def get_feature_vectors(raw_data):
-    data = fix_sr(raw_data)
+    # data = fix_sr(raw_data)
+    data = raw_data
     fv_arr = []
     for win in range(0, len(data)-WINDOW_SIZE, STRIDE):
         fv = get_window_fv(data[win: win+WINDOW_SIZE])
@@ -53,6 +66,7 @@ def get_window_fv(window):
     final_fv = []
     for i in (x, y, z, mag):
         final_fv += [f(i) for f in fv_funcs]
+    final_fv = np.nan_to_num(final_fv, nan=-1)
     return final_fv
 
 
