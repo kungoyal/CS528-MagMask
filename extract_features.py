@@ -2,12 +2,26 @@ import scipy.signal as sp
 import statistics
 import numpy as np
 import pandas as pd
+import io
 
 ZERO_CROSSING_THRESHOLD = 1
 WINDOW_SIZE = 20
 STRIDE = 10
 SAMPLE_RATE = 20
 
+def get_fv_csv2(csv_string):
+    d = pd.read_csv(io.StringIO(csv_string), header=None)
+    d.columns = ['x', 'y', 'z', 'time']
+    split_idx = list(np.where(d.isnull().any(axis=1))[0])
+    sensor1_fv = get_feature_vectors(d.iloc[0:split_idx[0]].values.astype(float))
+    sensor2_fv = get_feature_vectors(d.iloc[split_idx[0]+1:split_idx[1]].values.astype(float))
+    sensor3_fv = get_feature_vectors(d.iloc[split_idx[1]+1: split_idx[2]].values.astype(float))
+    rows = []
+    for win in range(len(sensor1_fv)):
+        rows.append([sensor1_fv[win].tolist(), sensor2_fv[win].tolist(), sensor3_fv[win].tolist()])
+    X = np.array(rows).reshape(-1, 84)  # Feature vector array
+    # input()
+    return X
 
 def get_feature_vectors(raw_data):
     data = fix_sr(raw_data)
