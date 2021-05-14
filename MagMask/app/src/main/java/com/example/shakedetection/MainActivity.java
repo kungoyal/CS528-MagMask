@@ -78,6 +78,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 EditText edit2 = (EditText) findViewById(R.id.editText3);
                 initials = edit.getText().toString();
                 env_code = edit2.getText().toString();
+                if(initials.isEmpty()){
+                    initials = "_";
+                }
+                if(env_code.isEmpty()){
+                    env_code = "_";
+                }
                 onResume();
             }
         });
@@ -105,6 +111,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tv.setText("");
         TextView tv2 = findViewById(R.id.textView4);
         tv2.setText("");
+        TextView tv3 = findViewById(R.id.textView7);
+        tv3.setText("");
         FileWriter writer = null;
         try {
             String filename = initials + "_" + env_code + "_" + activity_num + "_" + attempt_num + ".csv";
