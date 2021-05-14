@@ -18,6 +18,13 @@ import extract_features
 # Classifier with best selection metric will be saved into "best_classifier.pkl"
 SELECTION_METRIC = "F1"
 
+classifier_dict = {
+    "RandomForestClassifier": RandomForestClassifier(n_estimators=100, max_depth=4),
+    "RandomForestClassifier2": RandomForestClassifier(n_estimators=100, max_depth=8),
+    # "LinearSVC": LinearSVC(),
+    "RBF SVC": SVC(),
+    # "GaussianNB": GaussianNB(),
+}
 
 def load_data(data):
     # TODO: open data files, perform feature extraction and store feature vectors and labels in X, y
@@ -72,18 +79,12 @@ def get_scores(y_true, y_pred):
 
     return sd
 
-def main(data_dir):
-    X, y = load_data(data_dir)
+def main(data_dir, X=None, y=None):
+    # X, y = load_data(data_dir)
     X_tr, X_test, y_tr, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Add multiple classifiers here and the classifier with best hyperparameters will be selected automatically
-    classifier_dict = {
-        "RandomForestClassifier": RandomForestClassifier(n_estimators=100, max_depth=4),
-        "RandomForestClassifier2": RandomForestClassifier(n_estimators=100, max_depth=8),
-        # "LinearSVC": LinearSVC(),
-        "RBF SVC": SVC(),
-        # "GaussianNB": GaussianNB(),
-    }
+
 
     # TODO: up-sample minority class or use other methods to deal with class imbalance
     kf = KFold()  # not ideal because data has class imbalance
@@ -159,10 +160,11 @@ def main(data_dir):
         pickle.dump(normalizer, fil)
 
     print("DONE")
+    return best_model, normalizer
 
 
-def without_sensor(data_dir, remove_sensor=None):
-    X, y = load_data(data_dir)
+def without_sensor(data_dir, remove_sensor=None, X=None, y=None):
+    # X, y = load_data(data_dir)
     if remove_sensor == 'Magnetometer':
         X = X[:, list(range(56))]
     elif remove_sensor == 'Gyroscope':
@@ -175,12 +177,7 @@ def without_sensor(data_dir, remove_sensor=None):
     X_tr, X_test, y_tr, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Add multiple classifiers here and the classifier with best hyperparameters will be selected automatically
-    classifier_dict = {
-        "RandomForestClassifier": RandomForestClassifier(n_estimators=100, max_depth=4),
-        "LinearSVC": LinearSVC(),
-        "RBF SVC": SVC(),
-        "GaussianNB": GaussianNB(),
-    }
+
 
     # TODO: up-sample minority class or use other methods to deal with class imbalance
     kf = KFold()  # not ideal because data has class imbalance
@@ -250,8 +247,8 @@ def without_sensor(data_dir, remove_sensor=None):
     print("DONE")
     return (scores, best_model, best_classifier)
 
-def single_sensor(data_dir, sensor='Magnetometer'):
-    X, y = load_data(data_dir)
+def single_sensor(data_dir, sensor='Magnetometer', X=None, y=None):
+    # X, y = load_data(data_dir)
     if sensor == 'Accelerometer':
         X = X[:, list(range(28))]
     elif sensor == 'Gyroscope':
@@ -264,12 +261,6 @@ def single_sensor(data_dir, sensor='Magnetometer'):
     X_tr, X_test, y_tr, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Add multiple classifiers here and the classifier with best hyperparameters will be selected automatically
-    classifier_dict = {
-        "RandomForestClassifier": RandomForestClassifier(n_estimators=100, max_depth=4),
-        "LinearSVC": LinearSVC(),
-        "RBF SVC": SVC(),
-        "GaussianNB": GaussianNB(),
-    }
 
     # TODO: up-sample minority class or use other methods to deal with class imbalance
     kf = KFold()  # not ideal because data has class imbalance
@@ -341,48 +332,70 @@ def single_sensor(data_dir, sensor='Magnetometer'):
 
 if __name__ == "__main__":
     data_dir = "./Data"
-    load_data(data_dir)
+    X_load, y_load = load_data(data_dir)
     print("DONE")
-    main(data_dir)
-    quit()
+    model, normalizer = main(data_dir, X_load, y_load)
+    # quit()
+    print("#"*100)
     print("Removing Accelerometer Data")
-    no_accl_scores, _, _ = without_sensor(data_dir, 'Accelerometer')
+    no_accl_scores, _, _ = without_sensor(data_dir, 'Accelerometer', X_load, y_load)
+    print("_" * 100)
     print("Removing Gyroscope Data")
-    no_gyro_scores, _, _ = without_sensor(data_dir, 'Gyroscope')
+    no_gyro_scores, _, _ = without_sensor(data_dir, 'Gyroscope', X_load, y_load)
+    print("_" * 100)
     print("Removing Magnetometer Data")
-    no_magneto_scores, _, _ = without_sensor(data_dir, 'Magnetometer')
-
+    no_magneto_scores, _, _ = without_sensor(data_dir, 'Magnetometer', X_load, y_load)
+    print("#" * 100)
     print("Only Accelerometer Data")
-    only_accl_scores, _, _ = single_sensor(data_dir, 'Accelerometer')
+    only_accl_scores, _, _ = single_sensor(data_dir, 'Accelerometer', X_load, y_load)
+    print("_" * 100)
     print("Only Gyroscope Data")
-    only_gyro_scores, _, _ = single_sensor(data_dir, 'Gyroscope')
+    only_gyro_scores, _, _ = single_sensor(data_dir, 'Gyroscope', X_load, y_load)
+    print("_" * 100)
     print("Only Magnetometer Data")
-    only_magneto_scores, _, _ = single_sensor(data_dir, 'Magnetometer')
-
+    only_magneto_scores, _, _ = single_sensor(data_dir, 'Magnetometer', X_load, y_load)
+    print("#" * 100)
+    print("#" * 100)
     print("Without Accelerometer:")
     for metric in no_accl_scores.keys():
         print(f"\t\t{metric}\t:{no_accl_scores[metric]}")
-
+    print("-" * 50)
     print("Without Gyroscope")
     for metric in no_gyro_scores.keys():
         print(f"\t\t{metric}\t:{no_gyro_scores[metric]}")
-
+    print("_" * 50)
     print("Without Magnetometer")
     for metric in no_magneto_scores.keys():
         print(f"\t\t{metric}\t:{no_magneto_scores[metric]}")
-
+    print("#" * 50)
 
     print("Only Accelerometer:")
     for metric in only_accl_scores.keys():
         print(f"\t\t{metric}\t:{only_accl_scores[metric]}")
-
+    print("_" * 50)
     print("Only Gyroscope")
     for metric in only_gyro_scores.keys():
         print(f"\t\t{metric}\t:{only_gyro_scores[metric]}")
-
+    print("_" * 50)
     print("Only Magnetometer")
     for metric in only_magneto_scores.keys():
         print(f"\t\t{metric}\t:{only_magneto_scores[metric]}")
+    print("#" * 100)
 
+    # Remove label 6 from training data and test best model on this label
 
-
+    X_metallic = X_load[np.where(y_load == '6')]
+    y_metallic = y_load[np.where(y_load == '6')]
+    X_train = X_load[np.where(y_load != '6')]
+    y_train = y_load[np.where(y_load != '6')]
+    model, normalizer = main(data_dir, X_train, y_train)
+    X_metallic_norm = normalizer.transform(X_metallic)
+    y_preds = model.predict(X_metallic_norm)
+    # plot_confusion_matrix(model, X_metallic_norm, y_metallic, cmap=plt.cm.Blues)
+    # plt.show()
+    plt.hist(sorted(y_preds), range=(0, 5))
+    plt.title("Predictions on noise due to metallic objects")
+    plt.ylabel("No. of incorrect predictions")
+    plt.xlabel("Activity")
+    plt.show()
+    print("hello")
