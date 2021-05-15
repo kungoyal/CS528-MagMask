@@ -1,8 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.chaquo.python'
 
-android {
+    android {
     compileSdkVersion 28
-
+    sourceSets{
+        main{
+            setRoot "src/main"
+            python.srcDirs = ["src/main/python"]
+        }
+    }
 
     defaultConfig {
         applicationId "com.example.shakedetection"
@@ -12,6 +18,18 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+        python{
+//            buildPython "C:/Users/goyal/Downloads/python-3.8.2-embed-amd64/python.exe"
+            pip{
+                install "scikit-learn"
+                install "numpy"
+                install "pandas"
+                install "scipy"
+            }
+        }
     }
 
     buildTypes {

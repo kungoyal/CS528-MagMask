@@ -14,6 +14,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.chaquo.python.PyObject;
+import com.chaquo.python.Python;
+import com.chaquo.python.android.AndroidPlatform;
+
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,9 +35,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int attempt_num = 0;
     private String initials;
     private String env_code;
-    private ArrayList<String> accel_data = new ArrayList<>();
-    private ArrayList<String> gyro_data = new ArrayList<>();
-    private ArrayList<String> magneto_data = new ArrayList<>();
+    private String py_input;
+    private StringBuilder sb;
+    private ArrayList<String> accel_data;
+    private ArrayList<String> gyro_data;
+    private ArrayList<String> magneto_data;
+    private int SENSOR_DELAY = 50000;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -45,10 +54,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         gyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         magneto = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
+        if(!Python.isStarted()){
+            Python.start(new AndroidPlatform(this));
+        }
+        Python py = Python.getInstance();
+        final PyObject nc_file = py.getModule("load_normalizer_classifier"); //normalizer, classifier
+        final PyObject nc_model = nc_file.callAttr("get_classifier_normalizer");
+
+
         start_button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 run = true;
                 attempt_num += 1;
+                accel_data = new ArrayList<>();
+                gyro_data = new ArrayList<>();
+                magneto_data = new ArrayList<>();
                 try {
                     activity_num = Integer.parseInt(((EditText) findViewById(R.id.editText)).getText().toString());
                 }catch (Exception e) {
@@ -58,6 +78,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 EditText edit2 = (EditText) findViewById(R.id.editText3);
                 initials = edit.getText().toString();
                 env_code = edit2.getText().toString();
+                if(initials.isEmpty()){
+                    initials = "_";
+                }
+                if(env_code.isEmpty()){
+                    env_code = "_";
+                }
                 onResume();
             }
         });
@@ -66,25 +92,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View view) {
                 run = false;
-                onPause();
+                onPause(nc_model);
             }
         });
     }
 
     protected void onResume(){
         super.onResume();
-        sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, gyro, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, magneto, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, accel, SENSOR_DELAY);
+        sensorManager.registerListener(this, gyro, SENSOR_DELAY);
+        sensorManager.registerListener(this, magneto, SENSOR_DELAY);
     }
 
-    protected void onPause(){
+    protected void onPause(PyObject model){
         super.onPause();
         sensorManager.unregisterListener(this);
         TextView tv = findViewById(R.id.textView2);
         tv.setText("");
         TextView tv2 = findViewById(R.id.textView4);
         tv2.setText("");
+        TextView tv3 = findViewById(R.id.textView7);
+        tv3.setText("");
         FileWriter writer = null;
         try {
             String filename = initials + "_" + env_code + "_" + activity_num + "_" + attempt_num + ".csv";
@@ -94,43 +122,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        try {
-//            writer.write(threshold + System.lineSeparator());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+
+//        py_input = "";
+        sb = new StringBuilder("");
         for(String line: accel_data){
-            try {
-                writer.write(line + System.lineSeparator());
-            } catch (IOException e) {
-                e.printStackTrace();
+//            py_input += line + System.lineSeparator();
+            if (line !=  null) {
+                sb.append(line).append(System.lineSeparator());
             }
+
         }
-        try {
-            writer.write(System.lineSeparator());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+//        py_input += ";"+ System.lineSeparator();
+        sb.append(";").append(System.lineSeparator());
         for(String line: gyro_data){
-            try {
-                writer.write(line + System.lineSeparator());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            writer.write(System.lineSeparator());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        for(String line: magneto_data){
-            try {
-                writer.write(line + System.lineSeparator());
-            } catch (IOException e) {
-                e.printStackTrace();
+//            py_input += line + System.lineSeparator();
+            if (line != null) {
+                sb.append(line).append(System.lineSeparator());
             }
         }
 
+//        py_input += ";"+ System.lineSeparator();
+        sb.append(";").append(System.lineSeparator());
+        for(String line: magneto_data){
+//            py_input += line + System.lineSeparator();
+            if (line != null) {
+                sb.append(line).append(System.lineSeparator());
+            }
+        }
+//        py_input += ";";
+        sb.append(";");
+        try {
+            assert writer != null;
+            writer.write(sb.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try {
             writer.flush();
         } catch (IOException e) {
@@ -141,6 +168,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(!Python.isStarted()){
+            Python.start(new AndroidPlatform(this));
+        }
+        Python py = Python.getInstance();
+        final PyObject pyobj = py.getModule("make_predict");
+        final PyObject obj = pyobj.callAttr("get_pred", model, sb.toString());
+
+        TextView ptv = (TextView) findViewById(R.id.textView6);
+        String results = obj.toJava(String.class);
+        ptv.setText(results);
     }
 
     @Override
@@ -186,7 +223,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
-
 
 
 
