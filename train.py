@@ -19,11 +19,12 @@ import extract_features
 SELECTION_METRIC = "F1"
 
 classifier_dict = {
-    "RandomForestClassifier": RandomForestClassifier(n_estimators=100, max_depth=4),
+    # "RandomForestClassifier": RandomForestClassifier(n_estimators=100, max_depth=4),
     "RandomForestClassifier2": RandomForestClassifier(n_estimators=100, max_depth=8),
+    "RandomForestClassifier3": RandomForestClassifier(n_estimators=100, max_depth=12),
     # "LinearSVC": LinearSVC(),
     "RBF SVC": SVC(),
-    # "GaussianNB": GaussianNB(),
+    "GaussianNB": GaussianNB(),
 }
 
 def load_data(data):
@@ -63,6 +64,10 @@ def load_data(data):
     # X = np.array(data_df[data_cols].values.tolist()).reshape(len(table), -1)  # Feature vector array
     # y = data_df[label_cols].values.reshape(-1) # Multi-class labels
     y = np.array(table[:, 2])
+
+    for act_id in np.unique(y):
+        print(f"Total of {len([i for i in y if i == act_id])} windows extracted for activity {act_id}")
+
     # input()
     return X, y
 
@@ -81,7 +86,7 @@ def get_scores(y_true, y_pred):
 
 def main(data_dir, X=None, y=None):
     # X, y = load_data(data_dir)
-    X_tr, X_test, y_tr, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_tr, X_test, y_tr, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=42)
 
     # Add multiple classifiers here and the classifier with best hyperparameters will be selected automatically
 
@@ -94,7 +99,7 @@ def main(data_dir, X=None, y=None):
         fold += 1
         fold_scores[fold] = {}
         X_train, y_train = X_tr[train_idx], y_tr[train_idx]
-        X_valid, y_valid = X_tr[train_idx], y_tr[train_idx]
+        X_valid, y_valid = X_tr[test_idx], y_tr[test_idx]
 
         normalizer = Normalizer()
         X_train = normalizer.fit_transform(X_train)
@@ -126,7 +131,7 @@ def main(data_dir, X=None, y=None):
 
         print(f"Classifier = {classifier}")
         for agg_m in agg_metrics.keys():
-            print(f"\t{agg_m} = {agg_metrics[agg_m]}")
+            print(f"\tAvg. {agg_m} = {agg_metrics[agg_m]}")
 
             # identify best scoring model
             if agg_m == SELECTION_METRIC:
@@ -187,7 +192,7 @@ def without_sensor(data_dir, remove_sensor=None, X=None, y=None):
         fold += 1
         fold_scores[fold] = {}
         X_train, y_train = X_tr[train_idx], y_tr[train_idx]
-        X_valid, y_valid = X_tr[train_idx], y_tr[train_idx]
+        X_valid, y_valid = X_tr[test_idx], y_tr[test_idx]
 
         normalizer = Normalizer()
         X_train = normalizer.fit_transform(X_train)
@@ -270,7 +275,7 @@ def single_sensor(data_dir, sensor='Magnetometer', X=None, y=None):
         fold += 1
         fold_scores[fold] = {}
         X_train, y_train = X_tr[train_idx], y_tr[train_idx]
-        X_valid, y_valid = X_tr[train_idx], y_tr[train_idx]
+        X_valid, y_valid = X_tr[test_idx], y_tr[test_idx]
 
         normalizer = Normalizer()
         X_train = normalizer.fit_transform(X_train)
@@ -381,7 +386,15 @@ if __name__ == "__main__":
     for metric in only_magneto_scores.keys():
         print(f"\t\t{metric}\t:{only_magneto_scores[metric]}")
     print("#" * 100)
-
+    sensor_f1_scores =[
+        [only_accl_scores['F1'], no_magneto_scores['F1'], no_gyro_scores['F1']],
+        [no_magneto_scores['F1'], only_gyro_scores['F1'], no_accl_scores['F1']],
+        [no_gyro_scores['F1'], no_accl_scores['F1'], only_magneto_scores['F1']]
+    ]
+    # plt.imshow(sensor_f1_scores)
+    # plt.show()
+    for i in (sensor_f1_scores):
+        print(i)
     # Remove label 6 from training data and test best model on this label
 
     X_metallic = X_load[np.where(y_load == '6')]
